@@ -1,88 +1,73 @@
-# Quiz dos Escudos — Série A
+# Quiz dos Escudos ⚽
 
-App mobile em Flutter: o app mostra um escudo e o usuário precisa adivinhar de qual time da Série A ele é.
+App mobile desenvolvido em Flutter: o jogo exibe o escudo de um clube e o usuário precisa acertar de qual time da Série A do Campeonato Brasileiro ele pertence.
+
+## Sobre o projeto
 
 - 20 clubes cadastrados
-- 4 alternativas por rodada, sorteadas a cada partida
-- Botão de dica (apelido + estado do clube)
-- Placar, barra de progresso e tela de resultado
+- 4 alternativas por rodada, sorteadas aleatoriamente a cada partida
+- Botão de dica com o apelido e o estado do clube
+- Placar em tempo real, barra de progresso e tela de resultado com aproveitamento
+- Partidas de 5, 10 ou 20 rodadas
 
-Os escudos são **desenhados dentro do app** com `CustomPainter` (formato do brasão + padrão do uniforme: listras, faixa diagonal, tricolor, etc.). Isso evita usar logos oficiais, que são marcas registradas dos clubes, e ainda rende um ponto legal para comentar no vídeo.
+Os escudos são **desenhados em tempo de execução** com `CustomPainter`, sem uso de imagens externas. Cada brasão é construído no canvas a partir do formato do escudo e do padrão do uniforme do clube (listras verticais, listras horizontais, faixa diagonal, tricolor, entre outros). Essa decisão evita o uso dos logos oficiais, que são marcas registradas dos clubes, e mantém o aplicativo leve, sem pasta de assets.
 
----
+## Tecnologias
 
-## 1. Setup do Flutter
+- Flutter (Dart)
+- Material 3
+- Gerenciamento de estado com `StatefulWidget` + `setState`
+- `CustomPainter` para a renderização dos escudos
 
-```bash
-# 1. Baixe o SDK em https://docs.flutter.dev/get-started/install
-#    e adicione a pasta flutter/bin ao PATH
-
-flutter --version      # confirma a instalação
-flutter doctor          # checa Android SDK, licenças, emulador, etc.
-flutter doctor --android-licenses   # se aparecer pendência de licença
-flutter devices         # lista emulador / celular conectado
-```
-
-Checklist do `flutter doctor` que precisa estar OK para rodar no Android:
-- Flutter SDK
-- Android toolchain (Android Studio + SDK + licenças aceitas)
-- Um device conectado (emulador ou celular com depuração USB ativada)
-
-## 2. Criar o projeto e colar o código
-
-```bash
-flutter create quiz_escudos
-cd quiz_escudos
-```
-
-Depois substitua a pasta `lib/` e o arquivo `pubspec.yaml` pelos deste projeto. A estrutura fica assim:
+## Estrutura do projeto
 
 ```
 lib/
-├── main.dart                     # entrada do app + tema
-├── models/team.dart              # modelo Team + enum ShieldPattern
-├── data/teams.dart               # os 20 clubes da Série A
-├── widgets/team_shield.dart      # CustomPainter que desenha o escudo
+├── main.dart                     # Ponto de entrada e tema do app
+├── models/
+│   └── team.dart                 # Modelo Team e enum ShieldPattern
+├── data/
+│   └── teams.dart                # Base com os 20 clubes da Série A
+├── widgets/
+│   └── team_shield.dart          # CustomPainter que desenha os escudos
 └── screens/
-    ├── home_screen.dart          # tela inicial (escolhe nº de rodadas)
-    ├── quiz_screen.dart          # lógica do jogo
-    └── result_screen.dart        # placar final
+    ├── home_screen.dart          # Tela inicial e escolha de rodadas
+    ├── quiz_screen.dart          # Lógica do jogo e verificação das respostas
+    └── result_screen.dart        # Placar final
 ```
 
-## 3. Rodar
+## Como executar
+
+Pré-requisitos: Flutter SDK instalado e um emulador Android ou dispositivo físico conectado.
 
 ```bash
+git clone https://github.com/eduardorodrigues7/quiz-escudos.git
+cd quiz-escudos
 flutter pub get
-flutter run              # roda no device selecionado
-flutter build apk        # gera o APK em build/app/outputs/flutter-apk/
+flutter run
 ```
 
----
+Para gerar o APK de release:
 
-## Como o jogo funciona (para explicar no vídeo)
+```bash
+flutter build apk
+```
 
-1. `_buildQuestions()` embaralha a lista de clubes e pega N times.
-2. Para cada time sorteado, monta 3 distratores aleatórios + a resposta certa e embaralha as 4 alternativas.
-3. Ao tocar numa alternativa, `_answer()` trava a rodada, pinta verde/vermelho e incrementa o placar.
-4. Na última rodada, navega para a `ResultScreen` com o aproveitamento.
+O arquivo é gerado em `build/app/outputs/flutter-apk/`.
 
-O estado é controlado com `StatefulWidget` + `setState` — sem pacote externo de gerenciamento de estado, para manter o projeto simples e fácil de defender na apresentação.
+## Como funciona
 
----
+A cada partida, `_buildQuestions()` embaralha a lista de clubes e seleciona a quantidade de rodadas escolhida pelo usuário. Para cada time sorteado, são montadas três alternativas incorretas aleatórias somadas à resposta correta, e a ordem das opções é embaralhada novamente. Por isso nenhuma partida se repete.
 
-## Roteiro do vídeo (~4 min)
+Ao selecionar uma alternativa, o método `_answer()` bloqueia novas respostas na rodada, aplica o feedback visual (verde para acerto, vermelho para erro) e atualiza o placar. Na última rodada, o resultado é enviado para a tela final.
 
-1. **Abertura (20s)** — seu nome, disciplina e o que o app faz.
-2. **Setup (60s)** — terminal com `flutter --version`, `flutter doctor` e `flutter devices`. Mostre o Android Studio / VS Code com o emulador aberto.
-3. **Código-fonte (90s)** — abra na ordem: `main.dart` (tema), `models/team.dart`, `data/teams.dart` (mostre 1 ou 2 times), `widgets/team_shield.dart` (o `CustomPainter` — é o diferencial) e `screens/quiz_screen.dart` (o sorteio das perguntas e a verificação da resposta).
-4. **Projeto rodando (60s)** — `flutter run`, escolha 5 rodadas, acerte uma, erre outra de propósito para mostrar o feedback, use o botão de dica e chegue na tela de resultado.
-5. **Fechamento (20s)** — o que dá para evoluir: ranking local, cronômetro por rodada, escudos por asset e mais divisões.
+## Possíveis melhorias
 
-## Ideias para incrementar (se quiser mais nota)
+- Cronômetro por rodada
+- Ranking local persistido com `shared_preferences`
+- Modo difícil, com o nome do time digitado em vez de alternativas
+- Suporte a outras divisões e campeonatos
 
-- Cronômetro de 10s por rodada usando `Timer.periodic`
-- Salvar o recorde com `shared_preferences`
-- Modo difícil: escrever o nome do time em vez de escolher alternativa
-- Trocar o `CustomPainter` por imagens em `assets/escudos/` (declare em `pubspec.yaml` e use `Image.asset`)
+## Observação
 
-> A lista em `lib/data/teams.dart` segue a Série A de 2025. Se a temporada atual mudou, é só editar essa lista — nenhum outro arquivo precisa ser alterado.
+A lista de clubes em `lib/data/teams.dart` corresponde à Série A de 2025. Para atualizar a temporada, basta editar esse arquivo — nenhuma outra parte do código precisa ser alterada.
